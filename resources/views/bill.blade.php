@@ -68,7 +68,7 @@
                     <td> <select class="form-select" id="validationCustom03" onchange="calc()" required>
                 <option selected disabled value="">Choose...</option>
                 @foreach ($allItems as $item )
-                <option value="{{$item->id}}">{{$item->name}}</option>
+                <option value="{{$item->id}}" class="{{$item->id}}">{{$item->name}}</option>
                 @endforeach
 
               </select></td>
@@ -80,8 +80,8 @@
                             <input type="button" value="+" class="plus" field="quantity">
                         </div>
                     </td>
-                    <td><span id="price" class="amount">{{$allItems[0]->total_price}}</span></td>
-                    <td><span class="sales">{{$allItems[0]->sale_price}}</span>%</td>
+                    <td><span id="price" class="amount">0</span></td>
+                    <td><span class="sales">0</span>%</td>
                     <td><span id="total" class="total_amount"></span>0</td>
                 </tr>
 
@@ -153,6 +153,16 @@
         console.log(item);
         //$('#myTable').append('<tr><td>{{$allItems[0]->name}}</td><td class="cart-product-quantity"><div class="quantity clearfix"><input type="button" value="-" class="minus" field="quantity"><input type="text" style="width: 25%" id="quantity" name="quantity" value="1" class="qty"/><input type="button" value="+" class="plus" field="quantity"></div></td><td><span id="price" class="amount">{{$allItems[0]->total_price}}</span></td><td><span class="sales">{{$allItems[0]->sale_price}}</span>%</td><td><span id="total" class="total_amount"></span></td></tr>');
         const $lastRow = $('.item:last')
+        // var txt = "$allItems['+item+']->total_price";
+        // console.log(txt);
+        $lastRow.find('.amount').text('{{$allItems[1]->total_price}}');
+
+        // var hh = $lastRow.find('.amount').text();
+        // console.log(hh.charAt(10));
+        // var id = hh.charAt(10);
+        // $lastRow.find('.amount').text("{{'$allItems[id]->total_price'}}");
+
+        $lastRow.find('.sales').text('{{$allItems[1]->sale_price}}');
     }
     $().ready(function() {
         $(".minus").click(function() {
