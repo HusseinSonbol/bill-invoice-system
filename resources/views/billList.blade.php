@@ -26,7 +26,7 @@
     </tbody>
   </table>
 
-  <div class="row">
+  <div class="row mb-4">
       <div class="offset-2 col-md-3">
         <span class="h4">Total Bills :{{count($allBills)}}</span>
       </div>

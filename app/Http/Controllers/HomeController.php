@@ -7,6 +7,7 @@ use App\Models\item;
 use App\Models\safe;
 use App\Models\User;
 use App\Models\item_bill;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -17,6 +18,14 @@ class HomeController extends Controller
         $allUsers = User::get();
         $allItems = item::get();
         return view('bill', ['allSafes' => $allSafes , 'allUsers' => $allUsers , 'allItems' => $allItems]);
+
+
+    }
+
+    public function getItem($id)
+    {
+       $item  =  item::where('id','=',$id)->get();
+       return $item;
     }
 
     public function listBill(){
@@ -37,6 +46,23 @@ class HomeController extends Controller
 
         //dd($allItems);
         return view('billProfile',['allBills'=>$allBills , 'allItems'=>$allItems]);
+    }
+
+    public function submitBill(Request $req){
+        try{
+        $bill_id = bill::insertGetId(['user_id'=>$req->user ,'safe_id'=> $req->safe ,'total_price'=>$req->billPrice]);
+
+        $rows = array();
+        for($i = 0 ;  $i < count($req->items) ; $i++){
+            $element = ['bill_id'=>$bill_id,"item_id"=>$req->items[$i], "sale_price"=>$req->sales[$i],"item_quantity"=>$req->quantites[$i], "total_item_price"=>$req->totalItem[$i]];
+
+            array_push($rows, $element);
+        }
+        item_bill::insert($rows);
+       return redirect()->route('bill-list')->with('status','bill inserted succesfully');
+        }catch(Exception $e){
+            return $e->getMessage();
+        }
     }
 
 }

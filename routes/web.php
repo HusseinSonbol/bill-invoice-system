@@ -23,5 +23,7 @@ Route::get('/', function () {
 // });
 
 Route::get('/bill', [HomeController::class, 'index'])->name('bill');
+Route::post('/submitBill', [HomeController::class, 'submitBill'])->name('submit-bill');
+Route::get('/billItem/{id}', [HomeController::class, 'getItem'])->name('bill-item');
 Route::get('/billList', [HomeController::class, 'listBill'])->name('bill-list');
 Route::get('/billProfile/{id}', [HomeController::class, 'billProfile'])->name('bill-profile');

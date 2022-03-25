@@ -14,7 +14,7 @@
 <table class="table table-striped table-hover mt-4" id="myTable">
     <thead>
       <tr>
-        <th scope="col" style="width: 7%">#</th>
+
         <th scope="col" class="w-25">item Name</th>
         <th scope="col" class="w-25">sale</th>
         <th scope="col" class="w-25">quantity</th>
@@ -25,7 +25,7 @@
     <tbody>
         @foreach ($allItems as $item )
       <tr>
-        <th scope="row">{{$item->id}}</th>
+
         <td>{{$item->items->name}}</td>
         <td>{{$item->sale_price}}%</td>
         <td>{{$item->item_quantity}}</td>

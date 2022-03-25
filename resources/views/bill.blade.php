@@ -1,14 +1,14 @@
  @extends('layouts.app') @section('content')
 <div class="container">
-    <form class="row g-3 needs-validation" novalidate>
+    <form class="row g-3 needs-validation" id="myForm" novalidate>
 
 
         <div class="col-md-6">
             <label for="validationCustom04" class="form-label">Client</label>
-            <select class="form-select" id="validationCustom04" required>
+            <select class="form-select user" id="validationCustom04" required>
         <option selected disabled value="">Choose...</option>
        @foreach ( $allUsers as $user )
-       <option value="{{$user->name}}">{{$user->name}}</option>
+       <option value="{{$user->id}}">{{$user->name}}</option>
        @endforeach
 
       </select>
@@ -19,36 +19,16 @@
 
         <div class="col-md-6">
             <label for="validationCustom05" class="form-label">Safe</label>
-            <select class="form-select" id="validationCustom05" required>
+            <select class="form-select safe" id="validationCustom05" required>
           <option selected disabled value="">Choose...</option>
           @foreach ($allSafes as $safe )
-          <option value="{{$safe->name}}">{{$safe->name}}</option>
+          <option value="{{$safe->id}}">{{$safe->name}}</option>
           @endforeach
         </select>
             <div class="invalid-feedback">
                 Please select a valid Safe.
             </div>
         </div>
-        {{--
-        <div class="col-md-3">
-            <label for="validationCustom03" class="form-label">Item</label>
-            <select class="form-select" id="validationCustom03" required>
-          <option selected disabled value="">Choose...</option>
-          @foreach ($allItems as $item )
-          <option value="{{$item->name}}">{{$item->name}}</option>
-          @endforeach
-
-        </select>
-            <div class="invalid-feedback">
-                Please select a valid item.
-            </div>
-        </div>
-
-        <div class="col-md-2">
-            <label for="add" class="form-label">. . .</label><br>
-            <input type="button" id="add" value="Add" class="btn btn-secondary btn-add-row">
-        </div> --}}
-
 
         <table class="table table-striped table-hover" id="myTable">
             <thead>
@@ -65,13 +45,16 @@
             <tbody>
                 <tr class="item">
 
-                    <td> <select class="form-select" id="validationCustom03" onchange="calc()" required>
-                <option selected disabled value="">Choose...</option>
+                    <td> <select class="form-select select" id="validationCustom03" onchange="calculateItemDetails(event)" required>
+                <option selected disabled value="" class="op">Choose...</option>
                 @foreach ($allItems as $item )
-                <option value="{{$item->id}}" class="{{$item->id}}">{{$item->name}}</option>
+                <option value="{{$item->id}}" class="itemValue">{{$item->name}}</option>
                 @endforeach
 
-              </select></td>
+              </select>
+
+                    </td>
+
 
                     <td class="cart-product-quantity">
                         <div class="quantity clearfix">
@@ -80,18 +63,22 @@
                             <input type="button" value="+" class="plus" field="quantity">
                         </div>
                     </td>
-                    <td><span id="price" class="amount">0</span></td>
+                    <td><span id="price" class="amount price">0</span></td>
                     <td><span class="sales">0</span>%</td>
-                    <td><span id="total" class="total_amount"></span>0</td>
+                    <td class="total_amount total">0</td>
                 </tr>
+
 
             </tbody>
         </table>
+        <span hidden id="err" class="text-danger" style="width: 100%; height: 10%; margin-top:-15px ;">please select an item</span>
         <div class="col-md-2">
             <input type="button" id="add" value="Add" class="btn btn-secondary btn-add-row">
         </div>
         <div><span id="fTotal" class="h3"></span></div>
-
+        <div>
+            <h4>Total Price :</h4><span id="totalPrice">0</span>
+        </div>
         <div class="col-12">
             <button class="btn btn-primary" type="submit">Submit form</button>
         </div>
@@ -100,7 +87,7 @@
 
 
 <script>
-    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    //Example starter JavaScript for disabling form submissions if there are invalid fields
     (function() {
         'use strict'
 
@@ -114,6 +101,8 @@
                     if (!form.checkValidity()) {
                         event.preventDefault()
                         event.stopPropagation()
+                    }else{
+                        console.log('');
                     }
 
                     form.classList.add('was-validated')
@@ -122,78 +111,77 @@
     })()
 </script>
 <script>
-    function calculate(obj) {
 
-        var sale = parseInt($(obj).parent().parent().parent().find('.sales').text()) || 0;
-
-        var price = parseFloat($(obj).parent().parent().parent().find('.amount').text()) || 0;
-        price = price - price * sale / 100;
-        var quantity = parseInt($(obj).parent().find('.qty').val());
-        var nearTotal = price * quantity;
-        var total = parseFloat(nearTotal).toFixed(2)
-
-        tot = $(obj).parent().parent().parent().find('.total_amount').text(total);
-        console.log(tot[0].innerText);
-
-    }
-
-    function changeQuantity(num, obj) {
-        var value_to_set = parseInt($(obj).parent().find('.qty').val()) + num;
-        if (value_to_set <= 0) {
-            $(obj).parent().find('.qty').val(1);
-            return;
-        }
-        $(obj).parent().find('.qty').val(value_to_set);
-    }
-
-
-    function calc() {
-        let item = document.getElementById('validationCustom03').value;
-
-        console.log(item);
-        //$('#myTable').append('<tr><td>{{$allItems[0]->name}}</td><td class="cart-product-quantity"><div class="quantity clearfix"><input type="button" value="-" class="minus" field="quantity"><input type="text" style="width: 25%" id="quantity" name="quantity" value="1" class="qty"/><input type="button" value="+" class="plus" field="quantity"></div></td><td><span id="price" class="amount">{{$allItems[0]->total_price}}</span></td><td><span class="sales">{{$allItems[0]->sale_price}}</span>%</td><td><span id="total" class="total_amount"></span></td></tr>');
+    function calculateItemDetails(event) {
         const $lastRow = $('.item:last')
-        // var txt = "$allItems['+item+']->total_price";
-        // console.log(txt);
-        $lastRow.find('.amount').text('{{$allItems[1]->total_price}}');
 
-        // var hh = $lastRow.find('.amount').text();
-        // console.log(hh.charAt(10));
-        // var id = hh.charAt(10);
-        // $lastRow.find('.amount').text("{{'$allItems[id]->total_price'}}");
+        $.ajax({
+            type: 'GET',
+            url: `billItem/${event.target.value}`,
 
-        $lastRow.find('.sales').text('{{$allItems[1]->sale_price}}');
+            dataType: 'json',
+            success: function(data) {
+                //console.log(data)
+                $lastRow.find('.amount').text(data[0].quantity);
+                $lastRow.find('.sales').text(data[0].sale_price);
+
+            }
+        });
+
     }
+    var totalSumPrice = $('#totalPrice');
     $().ready(function() {
-        $(".minus").click(function() {
-            changeQuantity(-1, this);
-            calculate(this);
-        });
-        $(".plus").click(function() {
-            changeQuantity(1, this);
-            calculate(this);
-        });
-        $(".qty").keyup(function(e) {
-            if (e.keyCode == 38) changeQuantity(1, this);
-            if (e.keyCode == 40) changeQuantity(-1, this);
-            calculate(this);
-        });
+
+        $("#myTable").click(function(e) {
+            if (e.target.classList.contains("plus")) {
+                if (e.target.parentElement.parentElement.previousElementSibling.firstElementChild.value == '') {
+                    document.getElementById('err').hidden = false
+                } else {
+                    document.getElementById('err').hidden = true
+                    let row = e.target.parentNode.parentNode.parentNode
+                    let qty = row.querySelector(".qty")
+                    qty.value = parseInt(qty.value) + 1
+                    calculatePrice(row, qty)
+                }
+            } else if (e.target.classList.contains("minus")) {
+
+                    let row = e.target.parentNode.parentNode.parentNode
+                    let qty = row.querySelector("#quantity")
+                    if (qty.value > 0) {
+                        qty.value = parseInt(qty.value) - 1
+                    }
+                    calculatePrice(row, qty)
+
+            }
+        })
     });
-    // $( "#add" ).click(function() {
 
-    //     // var val = $('#validationCustom03').val();
-    //     // for(var i=0 ; i<{{count($allItems)}}; i++){
-    //     //     console.log(i);
-    //     //     if(val==$allItems[i]){
-    //     //         console.log($allItems[i]);
-    //     //     }
-    //     // }
-    //     $('#myTable').append('<tr><th scope="row">{{$allItems[0]->id}}</th><td>{{$allItems[0]->name}}</td><td class="cart-product-quantity"><div class="quantity clearfix"><input type="button" value="-" class="minus" field="quantity"><input type="text" style="width: 25%" id="quantity" name="quantity" value="1" class="qty"/><input type="button" value="+" class="plus" field="quantity"></div></td><td><span id="price" class="amount">{{$allItems[0]->total_price}}</span></td><td><span class="sales">{{$allItems[0]->sale_price}}</span>%</td><td><span id="total" class="total_amount"></span></td></tr>');
-    //     // "<tr><th scope='row'>{{$allItems[1]->id}}</th><td>{{$allItems[1]->name}}</td><td class='cart-product-quantity'><div class='quantity clearfix'><input type='button' value='-' class='minus' field='quantity'><input type='text' style='width: 25%' id='quantity' name='quantity' value='1' class='qty'><input type='button' value='+' class='plus' field='quantity'></div></td><td><span id='price' class='amount'>{{$allItems[1]->total_price}}</span></td><td><span class='sales'>{{$allItems[1]->sale_price}}</span>%</td><td><span id='total' class='total_amount'></span></td></tr>"
+    function calculatePrice(row, qty) {
 
-    // });
+        let price = row.querySelector(".price")
+        let total = row.querySelector(".total")
+        let item = row.querySelector(".itemValue")
+        let sales = row.querySelector(".sales")
+        price = (parseInt(price.innerText) - (parseInt(price.innerText) * parseInt(sales.innerText)) / 100)
+        let nearTotal = price * parseInt(qty.value)
+        let totalPrice = parseFloat(nearTotal).toFixed(1)
+        let sum = 0
 
-    $('.btn-add-row').on('click', () => {
+        total.innerText = totalPrice
+        document.querySelectorAll(".total").forEach(e => {
+            sum = sum + parseFloat(e.innerText)
+        })
+        totalSumPrice[0].innerText = sum.toFixed(2)
+        //console.log(row);
+    }
+
+    $('.btn-add-row').on('click', (e) => {
+        document.getElementById('err').hidden = true
+        let select ;
+        $('.select').each(function() {
+            select =  $(this).find(':selected')[0].value;
+        })
+        if(select !=''){
         const $lastRow = $('.item:last');
         const $newRow = $lastRow.clone();
 
@@ -204,6 +192,79 @@
         $newRow.insertAfter($lastRow);
 
         $newRow.find('input:first').focus();
+        }else{
+            document.getElementById('err').hidden = false
+        }
     });
+
+    $("#myForm").on("submit", function(e) {
+
+        e.preventDefault()
+        console.log(this.checkValidity());
+        if (!this.checkValidity()) {
+            event.preventDefault()
+            event.stopPropagation()
+         }else{
+
+        prices = []
+        document.querySelectorAll(".price").forEach(e => {
+            prices.push(e.innerText)
+        })
+        //console.log(prices)
+
+        quantites = []
+        document.querySelectorAll(".qty").forEach(e => {
+            quantites.push(e.value)
+        })
+        //console.log(quantites)
+
+        sales = []
+        document.querySelectorAll(".sales").forEach(e => {
+            sales.push(e.innerText)
+        })
+        //console.log(sales)
+
+        let items = []
+        $('.select').each(function() {
+            items.push($(this).find(':selected')[0].value)
+        })
+        //console.log(items)
+        let totalItem = []
+        document.querySelectorAll(".total").forEach(e => {
+            totalItem.push(e.innerText);
+        })
+
+        let billPrice = totalSumPrice[0].innerText;
+        let user = $('.user').find(':selected')[0].value ;
+        let safe = $('.safe').find(':selected')[0].value ;
+
+        //console.log(totalItem);
+        $.ajax({
+            type: 'POST',
+            url: 'submitBill/',
+
+            // dataType: 'json',
+            data: {
+                '_token': "{{csrf_token()}}",
+                sales,
+                prices,
+                quantites,
+                items,
+                totalItem,
+                user,
+                safe,
+                billPrice
+            },
+            success: function(data) {
+                //console.log(data)
+                window.location.href = "billList";
+            },
+            error:function (reject){
+                    var response = $.parseJSON(reject.responseText);
+                    console.log(response)
+                }
+        });
+    }
+    })
 </script>
 @endsection
